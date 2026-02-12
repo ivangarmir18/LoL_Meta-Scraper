@@ -1,114 +1,67 @@
 
-```markdown
-# 🎮 LoL-MetaScraper: Competitive Intelligence Dashboard
+# LoL-MetaScraper: Dashboard de Inteligencia Competitiva
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python) ![Selenium](https://img.shields.io/badge/Selenium-Web%20Scraping-43B02A?style=for-the-badge&logo=selenium) ![Google Sheets](https://img.shields.io/badge/Google%20Sheets-Live%20Dashboard-34A853?style=for-the-badge&logo=google-sheets) ![Status](https://img.shields.io/badge/Status-Meta%20Dependent-orange?style=for-the-badge)
+## Descripción General
 
-## 📋 Descripción General
+**LoL-MetaScraper** es un sistema automatizado de inteligencia competitiva para League of Legends. Funciona como un "Coach Virtual" basado en datos, diseñado para optimizar la fase de draft mediante estadística pura.
 
-**LoL-MetaScraper** es un sistema automatizado de **Inteligencia Competitiva** para League of Legends. Su objetivo no es solo mostrar datos, sino actuar como un **Coach Virtual** que ayuda a tomar decisiones de *drafting* (selección de campeones) basadas en estadística pura y el meta actual.
+El sistema utiliza una arquitectura híbrida: un script de Python extrae datos en tiempo real del meta actual (Winrates, Banrates, Counters) y los inyecta en una Hoja de Cálculo Maestra (Google Sheets), que actúa como la interfaz de usuario y cerebro estratégico.
 
-El sistema funciona mediante una arquitectura híbrida: un **motor de scraping** en Python que extrae datos en tiempo real de webs de análisis (winrates, banrates, counters) y los inyecta en una **Hoja de Cálculo Maestra (Google Sheets)** donde se cruzan con criterios estratégicos personalizados (sinergias, dificultad, composición de equipo).
+## Arquitectura del Sistema
 
-> **La Filosofía:** Los datos ganan partidas. Este sistema elimina la subjetividad ("creo que este campeón es bueno") y la reemplaza por evidencia ("este campeón tiene un 52% de WR y hace counter a su toplaner").
+El proyecto no tiene interfaz gráfica tradicional; la interfaz es el propio Excel en la nube.
 
-## 🏗 Arquitectura del Sistema
+* **Motor (Python):** `update_lol_data.py` - Realiza el scraping web usando Selenium y mapea los nombres de campeones.
+* **Launcher:** `launcher.bat` - Ejecutable de un solo clic para actualizar los datos.
+* **Base de Datos/UI:** Google Sheets - Donde se visualizan los datos y se calculan las sinergias.
+* **Seguridad:** `credentials.json` - Llave de acceso a la API de Google Cloud.
 
-El flujo de datos está diseñado para que el usuario interactúe principalmente con el Excel, mientras el script trabaja en segundo plano.
+## Requisitos Previos
 
-```text
-├── 📂 root
-│   ├── 📜 update_lol_data.py    # Core: Script de Scraping (Selenium + BeautifulSoup)
-│   ├── 📜 launcher.bat          # Ejecutable: Actualización en un clic
-│   ├── 📜 credentials.json      # Seguridad: Llave de acceso a Google Cloud API
-│   └── 📊 [Google Sheet]        # DASHBOARD: El cerebro real del sistema (Cloud)
+1.  Tener instalado **Google Chrome**.
+2.  Tener una cuenta de Google (para el Sheet).
+3.  Python 3.8 o superior instalado.
 
-```
+## Instalación y Configuración
 
-## 🚀 Características Clave
+### 1. Preparación del Entorno
+Si tienes el archivo `launcher.bat`, este se encargará de instalar las dependencias automáticamente. Si prefieres hacerlo manual:
 
-### 1. Extracción de Datos en Tiempo Real (ETL)
+    pip install pandas selenium gspread oauth2client webdriver-manager beautifulsoup4
 
-* Utiliza **Selenium** para navegar dinámicamente y extraer datos frescos del parche actual.
-* Resuelve automáticamente inconsistencias de nombres (ej. *Wukong* vs *MonkeyKing*) mediante un sistema de mapeo de `slugs`.
+### 2. Configuración de Google Cloud (CRÍTICO)
+Para que el script pueda escribir en tu Excel, necesitas autorizarlo:
 
-### 2. El Dashboard (Google Sheets) como UI
+1.  Consigue el archivo de credenciales JSON de tu Service Account de Google Cloud.
+2.  Renombra ese archivo a: `credentials.json`
+3.  Colócalo en la **misma carpeta** que el script `update_lol_data.py`.
+4.  Abre tu Google Sheet y dale acceso de "Editor" al email que aparece dentro del archivo json (el `client_email`).
 
-El script alimenta un Google Sheet diseñado específicamente para el análisis estratégico. El valor real reside en cómo se visualizan estos datos:
+## Cómo Usar
 
-* **Cálculo de "Score" Compuesto:** No solo mira el Winrate. Combina Winrate + Counter Pick + Sinergia de equipo.
-* **Filtrado por Roles:** Permite ver rápidamente qué *Support* es el mejor estadísticamente para tu *ADC*.
-* **Detección de "OPs" Ocultos:** Cruza datos de *Low Pickrate* con *High Winrate* para encontrar joyas ocultas del meta.
+1.  Haz doble clic en **`launcher.bat`**.
+2.  Se abrirá una ventana negra (consola) y verás cómo el navegador se abre y cierra trabajando en segundo plano.
+3.  Espera a que la consola diga que ha terminado o se cierre.
+4.  Ve a tu **Google Sheet**.
+    * La pestaña **"CRUDO"** tendrá los datos frescos del día.
+    * La pestaña **"HOJA BUENA"** (tu Dashboard) se habrá actualizado automáticamente con las nuevas estadísticas.
 
-### 3. Automatización Total
+## Lógica del Dashboard
 
-* Sin necesidad de tocar código. El usuario ejecuta `launcher.bat` y el sistema abre el navegador, actualiza la base de datos y cierra el proceso.
+El sistema no solo vuelca datos, los procesa para tomar decisiones:
 
----
+* **Winrate:** ¿Está fuerte el campeón en este parche?
+* **Counter Pick:** ¿Anula mecánicamente al rival de línea?
+* **Sinergia:** ¿Combina con la composición de mi equipo (ej. Wombo Combo, Poke)?
 
-## 🛠️ Instalación y Configuración
+## Estructura de Archivos
 
-### Prerrequisitos
-
-* Python 3.8 o superior.
-* Google Chrome instalado (para el WebDriver).
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone [https://github.com/tuusuario/lol-metascraper.git](https://github.com/tuusuario/lol-metascraper.git)
-cd lol-metascraper
-
-```
-
-### 2. Instalación de Dependencias
-
-El script gestiona sus librerías, pero puedes instalarlas manualmente:
-
-```bash
-pip install pandas selenium gspread oauth2client webdriver-manager beautifulsoup4
-
-```
-
-### 3. Configuración de Google Cloud (Credenciales)
-
-El sistema necesita permiso para escribir en tu Hoja de Cálculo.
-
-1. Obtén un archivo de credenciales JSON de una Service Account de Google Cloud.
-2. **Renómbralo a `credentials.json**`.
-3. Colócalo en la carpeta raíz del proyecto.
-
-> **Nota:** Asegúrate de compartir tu Google Sheet con el email de la Service Account (ej: `bot@project-name.iam.gserviceaccount.com`) y darle permisos de "Editor".
+/raiz-del-proyecto
+│
+├── update_lol_data.py    # Código fuente del scraper
+├── launcher.bat          # Ejecutable para usuario final
+├── credentials.json      # [TU ARCHIVO] Llave de seguridad (NO SUBIR A GITHUB)
+└── README.md             # Este archivo
 
 ---
-
-## ⚡ Cómo Usar
-
-1. **Ejecuta `launcher.bat**`: Verás una ventana de consola y el navegador abriéndose brevemente.
-2. **Espera el mensaje de éxito**: El script procesará campeón por campeón.
-3. **Abre tu Google Sheet**: Los datos en la pestaña "CRUDO" se habrán actualizado.
-4. **Analiza en la pestaña "HOJA BUENA"**: Tus fórmulas y tablas dinámicas ahora reflejan el estado real del juego hoy.
-
----
-
-## 📊 Lógica de Decisión
-
-El sistema prioriza campeones basándose en la siguiente jerarquía de valor:
-
-1. **Counter Directo:** ¿El campeón anula mecánicamente al rival?
-2. **Winrate Global:** ¿El campeón está fuerte en el parche actual (>51%)?
-3. **Sinergia:** ¿Encaja con la composición de mi equipo (ej. *Wombo Combo*)?
-
----
-
-## ⚠️ Disclaimer
-
-Este proyecto cumple con los términos de servicio de las APIs utilizadas y no inyecta código en el cliente del juego. Es una herramienta de análisis externa.
-**League of Legends** es una marca registrada de Riot Games, Inc.
-
----
-
-*Desarrollado por Iván García Miranda*
-
-```
-
+Desarrollado por Iván García Miranda
