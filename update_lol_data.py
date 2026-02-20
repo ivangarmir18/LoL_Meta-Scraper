@@ -1,3 +1,4 @@
+# IMPORTS
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 import pandas as pd
@@ -11,16 +12,14 @@ import traceback
 import queue
 from bs4 import BeautifulSoup
 
-# --- MOTOR SELENIUM ---
+# MOTOR SELENIUM
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-# ==============================================================================
 # CONFIGURACIÓN
-# ==============================================================================
-VERSION = "25.0 (Precision Stats & Fixes)"
+VERSION = "25.0"
 SHEET_NAME = "Excel Compos LOL"
 SOURCE_SHEET = "HOJA BUENA"
 TARGET_SHEET = "CRUDO"
@@ -33,7 +32,7 @@ COLOR_ACCENT = "#ff00bf" # Magenta
 COLOR_SUCCESS = "#00e676"
 COLOR_ERROR = "#ff5252"
 
-# 1. MAPEO PARA URLS (Excel -> Web)
+# 1. MAPEO PARA URLS
 SLUG_MAPPING = {
     "WUKONG": "monkeyking",      
     "MONKEYKING": "monkeyking",
@@ -58,7 +57,7 @@ SLUG_MAPPING = {
     "BRONCHALIX": "SKIP"
 }
 
-# 2. MAPEO PARA NORMALIZACIÓN FINAL (Web -> Tu Excel)
+# 2. MAPEO PARA NORMALIZACIÓN FINAL
 OUTPUT_NORMALIZATION = {
     "Dr. Mundo": "DRMUNDO",
     "Jarvan IV": "JARVAN",
@@ -82,9 +81,8 @@ OUTPUT_NORMALIZATION = {
     "Aurelion Sol": "AURELION SOL"
 }
 
-# ==============================================================================
+
 # MOTOR SELENIUM
-# ==============================================================================
 class SeleniumEngine:
     def __init__(self, log_callback):
         self.log = log_callback
@@ -138,7 +136,7 @@ class SeleniumEngine:
                 self.driver.get(url)
                 if "Not Found" in self.driver.title: continue
                 
-                # --- CLICKER INTELIGENTE ---
+                # CLICKER INTELIGENTE
                 try:
                     self.driver.execute_script("""
                         var buttons = document.querySelectorAll('.see_more_button');
@@ -158,7 +156,7 @@ class SeleniumEngine:
 
         if not soup: return None
 
-        # --- EXTRACCIÓN COUNTERS (BOX ISOLATION) ---
+        # EXTRACCIÓN COUNTERS (BOX ISOLATION)
         countered_by = []
         counters_to = []
         synergies = []
@@ -202,7 +200,7 @@ class SeleniumEngine:
                     else:
                         target_list.append(c_name)
 
-        # --- EXTRACCIÓN WR/BAN MEJORADA ---
+        # EXTRACCIÓN WR/BAN
         wr = "N/A"
         ban = "N/A"
         
@@ -241,7 +239,7 @@ class SeleniumEngine:
                     if m_ban: ban = f"{m_ban.group(1)}%"
             except: pass
 
-        # --- NORMALIZACIÓN FINAL ---
+        # NORMALIZACIÓN FINAL 
         clean_countered = self.normalize_output_names(list(dict.fromkeys(countered_by))[:5])
         clean_counters_to = self.normalize_output_names(list(dict.fromkeys(counters_to))[:5])
         clean_synergies = self.normalize_output_names(list(dict.fromkeys(synergies))[:25])
@@ -254,9 +252,7 @@ class SeleniumEngine:
             "SINERGIA": ", ".join(clean_synergies)
         }
 
-# ==============================================================================
 # DASHBOARD
-# ==============================================================================
 class CoachApp(tk.Tk):
     def __init__(self):
         super().__init__()
